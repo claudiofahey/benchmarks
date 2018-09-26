@@ -78,11 +78,7 @@ def create_iterator(batch_size,
                     num_threads=None):
   """Creates a dataset iterator for the benchmark."""
   glob_pattern = dataset.tf_record_pattern(subset)
-  file_names = gfile.Glob(glob_pattern)
-  if not file_names:
-    raise ValueError('Found no files in --data_dir matching: {}'
-                     .format(glob_pattern))
-  ds = tf.data.TFRecordDataset.list_files(file_names)
+  ds = tf.data.TFRecordDataset.list_files(glob_pattern)
   ds = ds.apply(
       interleave_ops.parallel_interleave(
           tf.data.TFRecordDataset, cycle_length=10))
