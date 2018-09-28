@@ -1773,6 +1773,7 @@ class BenchmarkCNN(object):
         saver=saver,
         global_step=graph_info.global_step,
         summary_op=None,
+        save_summaries_secs=10,
         save_model_secs=self.params.save_model_secs,
         summary_writer=summary_writer,
         local_init_run_options=init_run_options)
