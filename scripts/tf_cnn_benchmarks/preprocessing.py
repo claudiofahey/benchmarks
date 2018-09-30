@@ -306,8 +306,11 @@ def train_image(image_buffer,
     # allowed range of aspect ratios, sizes and overlap with the human-annotated
     # bounding box. If no box is supplied, then we assume the bounding box is
     # the entire image.
+    image = tf.image.decode_image(image_buffer, channels=3)
+    image_shape = tf.shape(image)
+
     sample_distorted_bounding_box = tf.image.sample_distorted_bounding_box(
-        tf.image.extract_jpeg_shape(image_buffer),
+        image_shape,
         bounding_boxes=bbox,
         min_object_covered=0.1,
         aspect_ratio_range=[0.75, 1.33],
@@ -316,11 +319,9 @@ def train_image(image_buffer,
         use_image_if_no_bounding_boxes=True)
     bbox_begin, bbox_size, distort_bbox = sample_distorted_bounding_box
     if summary_verbosity >= 3:
-      image = tf.image.decode_jpeg(image_buffer, channels=3,
-                                   dct_method='INTEGER_FAST')
-      image = tf.image.convert_image_dtype(image, dtype=tf.float32)
+      image_f32 = tf.image.convert_image_dtype(image, dtype=tf.float32)
       image_with_distorted_box = tf.image.draw_bounding_boxes(
-          tf.expand_dims(image, 0), distort_bbox)
+          tf.expand_dims(image_f32, 0), distort_bbox)
       tf.summary.image(
           'images_with_distorted_bounding_box',
           image_with_distorted_box)
@@ -333,8 +334,6 @@ def train_image(image_buffer,
       image = tf.image.decode_and_crop_jpeg(
           image_buffer, crop_window, channels=3)
     else:
-      image = tf.image.decode_jpeg(image_buffer, channels=3,
-                                   dct_method='INTEGER_FAST')
       image = tf.slice(image, bbox_begin, bbox_size)
 
     distorted_image = tf.image.random_flip_left_right(image)
