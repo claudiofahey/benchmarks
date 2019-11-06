@@ -342,9 +342,11 @@ def train_image(image_buffer,
                       value=area_range)
     mlperf.logger.log(key=mlperf.tags.INPUT_DISTORTED_CROP_MAX_ATTEMPTS,
                       value=max_attempts)
-
+    # Decode image. This supports PNG and JPEG files.
+    image = tf.image.decode_image(image_buffer, channels=3)
+    image_shape = tf.shape(image)
     sample_distorted_bounding_box = tf.image.sample_distorted_bounding_box(
-        tf.image.extract_jpeg_shape(image_buffer),
+        image_shape,
         bounding_boxes=bbox,
         min_object_covered=min_object_covered,
         aspect_ratio_range=aspect_ratio_range,
@@ -370,8 +372,6 @@ def train_image(image_buffer,
       image = tf.image.decode_and_crop_jpeg(
           image_buffer, crop_window, channels=3)
     else:
-      image = tf.image.decode_jpeg(image_buffer, channels=3,
-                                   dct_method='INTEGER_FAST')
       image = tf.slice(image, bbox_begin, bbox_size)
 
     mlperf.logger.log(key=mlperf.tags.INPUT_RANDOM_FLIP)
